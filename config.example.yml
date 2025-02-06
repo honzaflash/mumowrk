@@ -1,0 +1,12 @@
+# groups is a list of objects
+groups:
+# the first group is considered the primary group which
+# is the default one to target when swithcing
+# group 1
+- name: "G1"
+  # the first active monitor in this list will
+  # be considered the primary monitor of the group
+  monitors: ["DP-6", "DP-5", "DP-8", "DP-7"]
+# group 2
+- name: "G2"
+  monitors: ["eDP-1"]
