@@ -95,7 +95,7 @@ fn get_state(connection: &mut Connection) -> (Vec<(String, Vec<(i32, bool)>)>, V
 
     let focused_workspace_id = workspaces.iter()
         .find(|workspace| workspace.focused)
-        .map(|workspace| WorkspaceId::parse(&workspace.name));
+        .and_then(|workspace| WorkspaceId::parse_safe(&workspace.name));
     let workspaces_by_monitor_groups =
         managed_ids.iter().into_group_map_by(|id| id.get_monitor_group_name());
     let monitor_groups = workspaces_by_monitor_groups.iter()

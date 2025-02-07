@@ -18,7 +18,7 @@ impl WorkspaceId {
     }
 
     pub fn parse_safe(name: &str) -> Option<WorkspaceId> {
-        let workspace_id_re = Regex::new(r"^(\w+)-(\d+)-(\d+)$").unwrap();
+        let workspace_id_re = Regex::new(r"^(\w+)-(\d+)-(-?\d+)$").unwrap();
         workspace_id_re
             .captures(name)
             .map(|caps| WorkspaceId {

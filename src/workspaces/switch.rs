@@ -18,9 +18,13 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         None => value,
         Some(sign) => {
             // Get current state for the target monitor group
-            // 1. find the first visible workspace in the monitor group
+            // 1. find the first visible (managed) workspace in the monitor group
             let current_workspace = workspaces.iter()
-                .find(|workspace| workspace.visible && workspace.name.starts_with(monitor_group));
+                .find(|workspace|
+                    workspace.visible && WorkspaceId::parse_safe(&workspace.name).map(
+                        |id| id.get_monitor_group_name() == monitor_group
+                    ).unwrap_or(false)
+                );
             // 2. get the index from the workspace name
             let current_index = match current_workspace {
                 Some(workspace) => WorkspaceId::parse(&workspace.name).get_index(),
