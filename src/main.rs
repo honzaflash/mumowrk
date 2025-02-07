@@ -6,7 +6,7 @@ mod config;
 mod cli;
 
 use config::Config;
-use workspaces::{init_workspaces, print_state, switch_workspace_groups};
+use workspaces::{init_workspaces, print_state_text, print_waybar_module, subscribe_and_print, switch_workspace_groups};
 use cli::{Cli, Subcommands};
 
 
@@ -46,8 +46,17 @@ fn main() {
                 &destination,
             );
         },
-        Subcommands::Print => {
-            print_state(&mut connection);
+        Subcommands::Print { waybar_module, subscribe } => {
+            let printer = if waybar_module {
+                print_waybar_module
+            } else {
+                print_state_text
+            };
+            if subscribe {
+                subscribe_and_print(connection, printer);
+            } else {
+                printer(&mut connection);
+            }
         },
     };
 }

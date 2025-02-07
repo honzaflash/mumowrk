@@ -31,5 +31,12 @@ pub enum Subcommands {
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
     },
-    Print,
+    Print {
+        /// Print state as JSON input for a waybar module
+        #[arg(long, short)]
+        waybar_module: bool,
+        /// Subscribe to IPC events and keep printing state updates on change
+        #[arg(long, short)]
+        subscribe: bool,
+    },
 }

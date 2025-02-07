@@ -6,4 +6,4 @@ mod print;
 
 pub use init::init_workspaces;
 pub use switch::switch_workspace_groups;
-pub use print::print_state;
+pub use print::{subscribe_and_print, print_state_text, print_waybar_module};
