@@ -1,7 +1,7 @@
 use swayipc::Connection;
 
-use crate::config::{Config, FIRST_WORKSPACE_GROUP};
-use super::{utils::get_active_outputs, workspace_id::WorkspaceId};
+use crate::{config::{Config, FIRST_WORKSPACE_GROUP}, sway_commands::{assign_workspace_to_monitor, focus_workspace, get_active_monitors}};
+use super::workspace_id::WorkspaceId;
 
 
 pub fn init_workspaces(connection: &mut Connection, config: &Config) {
@@ -9,7 +9,7 @@ pub fn init_workspaces(connection: &mut Connection, config: &Config) {
         return;
     }
 
-    let active_monitors = get_active_outputs(connection);
+    let active_monitors = get_active_monitors(connection);
 
     // Assign every managed monitor a workspace per the configured grouping
     for group in config.groups.iter() {
@@ -18,14 +18,9 @@ pub fn init_workspaces(connection: &mut Connection, config: &Config) {
                 continue;
             }
             let workspace_id = WorkspaceId::new(&group.name, index, FIRST_WORKSPACE_GROUP);
-            // assign the workspace to the monitor
-            connection.run_command(
-                format!("workspace {} output {}", workspace_id, monitor)
-            ).expect("Failed to assign workspace to a monitor");
-            // activate the workspace
-            connection.run_command(
-                format!("workspace {}", workspace_id)
-            ).expect("Failed to activate workspace");
+            assign_workspace_to_monitor(connection, &workspace_id, monitor);
+            // activate the workspace on the monitor
+            focus_workspace(connection, &workspace_id);
         }
     }
 
@@ -35,7 +30,5 @@ pub fn init_workspaces(connection: &mut Connection, config: &Config) {
         config.get_primary_group().get_main_monitor_index(&active_monitors),
         FIRST_WORKSPACE_GROUP,
     );
-    connection.run_command(
-        format!("workspace {}", main_workspace_id)
-    ).expect("Failed to activate workspace");
+    focus_workspace(connection, &main_workspace_id);
 }

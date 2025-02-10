@@ -1,7 +1,5 @@
-use std::collections::HashSet;
-
 use regex::Regex;
-use swayipc::{Connection, Workspace};
+use swayipc::Workspace;
 
 use super::workspace_id::WorkspaceId;
 
@@ -45,14 +43,5 @@ pub(super) fn find_focused_workspace(workspaces: &[Workspace]) -> &Workspace {
     workspaces.iter()
         .find(|workspace| workspace.focused)
         .expect("Unexpected: No focused workspace")
-}
-
-
-pub(super) fn get_active_outputs(connection: &mut Connection) -> HashSet<String> {
-    let outputs = connection.get_outputs().expect("Failed to get outputs");
-    outputs.iter()
-        .filter(|output| output.active)
-        .map(|output| output.name.clone())
-        .collect()
 }
 

@@ -2,12 +2,13 @@ use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
+use crate::sway_commands::{focus_workspace, get_assign_and_focus_workspace_command, get_workspaces};
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
 
 pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, monitor_group: &str, destination: &str) {
-    let workspaces = connection.get_workspaces().expect("Failed to get workspaces");
+    let workspaces = get_workspaces(connection);
 
     let next_index = get_target_index(&workspaces, monitor_group, destination);
 
@@ -43,13 +44,11 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         .enumerate()
         .map(|(monitor_index, monitor)| {
             let workspace_id = WorkspaceId::new(monitor_group, monitor_index, next_index);
-            format!("workspace {} output {}; workspace {};", workspace_id, monitor, workspace_id)
+            get_assign_and_focus_workspace_command(&workspace_id, monitor)
         })
-        .join("");
+        .join(";");
     connection.run_command(commands).expect("Failed to switch workspace group");
 
-    // Focus the workspace that should be in focus
-    connection.run_command(
-        format!("workspace {}", next_focus)
-    ).expect("Failed to focus workspace");
+    // Focus the workspace that should be in focus after the switch
+    focus_workspace(connection, &next_focus);
 }

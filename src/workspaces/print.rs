@@ -1,6 +1,8 @@
 use itertools::{Either, Itertools};
 use swayipc::{Connection, EventType};
 
+use crate::sway_commands::get_workspaces;
+
 use super::workspace_id::WorkspaceId;
 
 
@@ -83,7 +85,7 @@ pub fn print_waybar_module(connection: &mut Connection) {
 
 /// Get current workspaces and process the state into workspace groups state
 fn get_state(connection: &mut Connection) -> (Vec<(String, Vec<(i32, bool)>)>, Vec<(String, bool)>) {
-    let workspaces = connection.get_workspaces().expect("Failed to get workspaces");
+    let workspaces = get_workspaces(connection);
     
     let (unmanaged_workspaces, managed_ids): (Vec<_>, Vec<_>) =
         workspaces.iter().partition_map(|workspace| {

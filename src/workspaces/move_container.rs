@@ -1,7 +1,8 @@
 use swayipc::Connection;
 
 use crate::config::Config;
-use super::utils::{find_focused_workspace, get_active_outputs, get_target_index};
+use crate::sway_commands::{focus_workspace, get_active_monitors, get_workspaces, move_container};
+use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
 
@@ -12,7 +13,7 @@ pub fn move_container_to_workspace_group(
     monitor_group: Option<&String>,
     change_focus: bool,
 ) {
-    let workspaces = connection.get_workspaces().expect("Failed to get workspaces");
+    let workspaces = get_workspaces(connection);
 
     let focused_workspace = find_focused_workspace(&workspaces);
     
@@ -24,7 +25,7 @@ pub fn move_container_to_workspace_group(
         )
     }).unwrap_or_else(|| {
         // focused workspace is not managed, get main monitor of primary group
-        let active_monitors = get_active_outputs(connection);
+        let active_monitors = get_active_monitors(connection);
         let monitor_group = config.get_primary_group();
         (
             monitor_group.get_main_monitor_index(&active_monitors),
@@ -41,13 +42,10 @@ pub fn move_container_to_workspace_group(
         target_group_index,
     );
 
-    let command = format!("move container to workspace {};", workspace_id);
-    connection.run_command(command).expect("Failed to move container");
+    move_container(connection, &workspace_id);
 
-    if !change_focus {
-        return // after moving the container we are done
-    }
-    let focus_command = format!("workspace {}", workspace_id);
-    connection.run_command(focus_command).expect("Failed to witch workspace group");
+    if change_focus {
+        focus_workspace(connection, &workspace_id);
+    };
 }
 

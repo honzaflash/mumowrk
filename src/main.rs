@@ -4,6 +4,7 @@ use swayipc::Connection;
 mod workspaces;
 mod config;
 mod cli;
+mod sway_commands;
 
 use config::Config;
 use workspaces::{init_workspaces, move_container_to_workspace_group, print_state_text, print_waybar_module, subscribe_and_print, switch_workspace_groups};
