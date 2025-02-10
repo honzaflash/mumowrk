@@ -1,46 +1,18 @@
 use itertools::Itertools;
-use regex::Regex;
 use swayipc::Connection;
 
 use crate::config::Config;
+use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
 
 pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, monitor_group: &str, destination: &str) {
     let workspaces = connection.get_workspaces().expect("Failed to get workspaces");
 
-    let destination_re = Regex::new(r"([-+])?(\d+)").unwrap();
-    let (maybe_sign, value) = match destination_re.captures(destination) {
-        Some(caps) => (caps.get(1).map(|m| m.as_str()), caps[2].parse::<i32>().unwrap()),
-        None => panic!("Invalid destination argument: '{}'", destination),
-    };
-    let next_index = match maybe_sign {
-        None => value,
-        Some(sign) => {
-            // Get current state for the target monitor group
-            // 1. find the first visible (managed) workspace in the monitor group
-            let current_workspace = workspaces.iter()
-                .find(|workspace|
-                    workspace.visible && WorkspaceId::parse_safe(&workspace.name).map(
-                        |id| id.get_monitor_group_name() == monitor_group
-                    ).unwrap_or(false)
-                );
-            // 2. get the index from the workspace name
-            let current_index = match current_workspace {
-                Some(workspace) => WorkspaceId::parse(&workspace.name).get_index(),
-                None => {
-                    eprintln!("Monitor group has no visible workspaces");
-                    1
-                }
-            };
-            current_index + if sign == "-" { -value } else { value }
-        }
-    };
+    let next_index = get_target_index(&workspaces, monitor_group, destination);
 
     // Find the workspace that should be in focus after the switch
-    let focused_workspace = workspaces.iter()
-        .find(|workspace| workspace.focused)
-        .expect("No focused workspace");
+    let focused_workspace = find_focused_workspace(&workspaces);
     let focused_workspace_id = WorkspaceId::parse_safe(&focused_workspace.name);
     let monitor_index_to_focus = focused_workspace_id.and_then(|id| {
         // focused workspace is managed, was able to parse the ID

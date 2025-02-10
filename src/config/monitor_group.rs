@@ -27,7 +27,7 @@ impl MonitorGroup {
         return &self.name;
     }
 
-    pub fn get_main_monitor_index(&self, active_monitors: HashSet<String>) -> usize {
+    pub fn get_main_monitor_index(&self, active_monitors: &HashSet<String>) -> usize {
         self.monitors.iter()
             .position(|monitor| active_monitors.contains(monitor))
             .expect("No active monitors in the primary monitor group")

@@ -6,7 +6,7 @@ mod config;
 mod cli;
 
 use config::Config;
-use workspaces::{init_workspaces, print_state_text, print_waybar_module, subscribe_and_print, switch_workspace_groups};
+use workspaces::{init_workspaces, move_container_to_workspace_group, print_state_text, print_waybar_module, subscribe_and_print, switch_workspace_groups};
 use cli::{Cli, Subcommands};
 
 
@@ -44,6 +44,15 @@ fn main() {
                 &config,
                 &mon_group.unwrap_or(config.groups[0].get_name().to_string()),
                 &destination,
+            );
+        },
+        Subcommands::Move { destination, focus, mon_group } => {
+            move_container_to_workspace_group(
+                &mut connection,
+                &config,
+                &destination,
+                mon_group.as_ref(),
+                focus,
             );
         },
         Subcommands::Print { waybar_module, subscribe } => {

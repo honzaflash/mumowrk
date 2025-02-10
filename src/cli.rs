@@ -31,6 +31,17 @@ pub enum Subcommands {
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
     },
+    Move {
+        /// Absolute index or relative increment ([+-]N) for destination workspace group
+        #[arg(value_name = "DESTINATION", allow_hyphen_values = true)]
+        destination: String,
+        /// Change focus to targer workspace group after moving
+        #[arg(short, long)]
+        focus: bool,
+        /// Target monitor group name (default: focused group)
+        #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
+        mon_group: Option<String>,
+    },
     Print {
         /// Print state as JSON input for a waybar module
         #[arg(long, short)]
