@@ -2,6 +2,9 @@ use std::collections::HashSet;
 
 use swayipc::{Connection, Workspace};
 
+// TODO use macros for these at some point?
+//   at least for the commands formatting
+
 
 /// Get list of current workspaces from the sway IPC connection
 /// 
@@ -62,4 +65,12 @@ pub fn get_assign_and_focus_workspace_command<Id: std::fmt::Display>(
     monitor: &str,
 ) -> String {
     format!("workspace {} output {}; workspace {}", workspace_id, monitor, workspace_id)
+}
+
+/// Format a pair of commands to assign and actiate a workspace
+/// on a specific monitor
+pub fn get_focus_workspace_command<Id: std::fmt::Display>(
+    workspace_id: &Id,
+) -> String {
+    format!("workspace {}", workspace_id)
 }
