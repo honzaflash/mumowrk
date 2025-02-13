@@ -38,7 +38,7 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         ).unwrap_or(focused_workspace.name.clone());
 
     // Switch the workspaces
-    let group_config = config.groups.iter().find(|group| group.name == monitor_group)
+    let group_config = config.get_group(monitor_group)
         .expect("Monitor group not found");
     let commands = group_config.monitors.iter()
         .enumerate()
@@ -47,7 +47,7 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
             get_assign_and_focus_workspace_command(&workspace_id, monitor)
         })
         .join(";");
-    connection.run_command(commands).expect("Failed to switch workspace group");
+    connection.run_command(commands).expect("Failed to switch workspace groups");
 
     // Focus the workspace that should be in focus after the switch
     focus_workspace(connection, &next_focus);
