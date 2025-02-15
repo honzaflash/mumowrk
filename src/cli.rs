@@ -42,6 +42,7 @@ pub enum Subcommands {
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
     },
+    /// Print the current state of workspaces
     Print {
         /// Print state as JSON input for a waybar module
         #[arg(long, short)]
