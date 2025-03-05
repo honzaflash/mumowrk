@@ -37,6 +37,16 @@ pub fn focus_workspace<Id: std::fmt::Display>(connection: &mut Connection, works
     ).expect("Failed to activate workspace");
 }
 
+/// Run a `rename workspace OLD to NEW` command over the sway IPC connection
+/// 
+/// # Panincs
+/// Panics if the command fails
+pub fn rename_workspace<IdA: std::fmt::Display, IdB: std::fmt::Display>(connection: &mut Connection, old: &IdA, new: &IdB) {
+    connection.run_command(
+        format!("rename workspace {} to {};", old, new)
+    ).expect("Failed to rename workspace");
+}
+
 /// Run a `move container to workspace` command over the sway IPC connection
 /// 
 /// # Panincs

@@ -31,7 +31,25 @@ pub enum Subcommands {
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
     },
-    Move {
+    /// Move (reorder) workspace groups
+    #[clap(visible_alias = "swap")]
+    MoveGroup {
+        // TODO: change `from` and `to` to `A` and `B` or something
+        //       Also rename the command to SwapGroup probably
+        /// Absolute index of target workspace group
+        #[arg(value_name = "FROM")]
+        from: i32,
+        // TODO: validate
+        /// Absolute index or relative increment ([+-]N) for destination
+        #[arg(value_name = "TO", allow_hyphen_values = true)]
+        to: String,
+        /// Target monitor group name (default: focused group)
+        #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
+        mon_group: Option<String>,
+    },
+    /// Move containers between workspace groups
+    #[clap(visible_alias = "move")]
+    MoveContainer {
         /// Absolute index or relative increment ([+-]N) for destination workspace group
         #[arg(value_name = "DESTINATION", allow_hyphen_values = true)]
         destination: String,

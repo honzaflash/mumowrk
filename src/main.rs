@@ -7,7 +7,15 @@ mod cli;
 mod sway_commands;
 
 use config::Config;
-use workspaces::{init_workspaces, move_container_to_workspace_group, print_state_text, print_waybar_module, subscribe_and_print, switch_workspace_groups};
+use workspaces::{
+    init_workspaces,
+    move_container_to_workspace_group,
+    print_state_text,
+    print_waybar_module,
+    subscribe_and_print,
+    swap_workspace_groups,
+    switch_workspace_groups,
+};
 use cli::{Cli, Subcommands};
 
 
@@ -47,7 +55,16 @@ fn main() {
                 &destination,
             );
         },
-        Subcommands::Move { destination, focus, mon_group } => {
+        Subcommands::MoveGroup { from, to, mon_group } => {
+            swap_workspace_groups(
+                &mut connection,
+                &config,
+                from,
+                &to,
+                mon_group.as_ref(),
+            );
+        },
+        Subcommands::MoveContainer { destination, focus, mon_group } => {
             move_container_to_workspace_group(
                 &mut connection,
                 &config,

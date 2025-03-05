@@ -1,3 +1,4 @@
+use rand::{Rng, distr::Alphanumeric};
 use regex::Regex;
 use swayipc::Workspace;
 
@@ -45,3 +46,10 @@ pub(super) fn find_focused_workspace(workspaces: &[Workspace]) -> &Workspace {
         .expect("Unexpected: No focused workspace")
 }
 
+pub(super) fn generate_random_string(length: usize) -> String {
+    rand::rng()
+        .sample_iter(&Alphanumeric)
+        .take(length)
+        .map(char::from)
+        .collect()
+}
