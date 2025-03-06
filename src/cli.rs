@@ -60,6 +60,8 @@ pub enum Subcommands {
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
     },
+    /// Reorganize containers after a change to monitor configuration (e.g. switching monitors)
+    Reorganize {},
     /// Print the current state of workspaces
     Print {
         /// Print state as JSON input for a waybar module

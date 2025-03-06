@@ -7,15 +7,6 @@ mod cli;
 mod sway_commands;
 
 use config::Config;
-use workspaces::{
-    init_workspaces,
-    move_container_to_workspace_group,
-    print_state_text,
-    print_waybar_module,
-    subscribe_and_print,
-    swap_workspace_groups,
-    switch_workspace_groups,
-};
 use cli::{Cli, Subcommands};
 
 
@@ -45,10 +36,10 @@ fn main() {
 
     match args.command {
         Subcommands::Init => {
-            init_workspaces(&mut connection, &config);
+            workspaces::init_workspaces(&mut connection, &config);
         },
         Subcommands::Switch { destination, mon_group } => {
-            switch_workspace_groups(
+            workspaces::switch_workspace_groups(
                 &mut connection,
                 &config,
                 &mon_group.unwrap_or(config.groups[0].get_name().to_string()),
@@ -56,7 +47,7 @@ fn main() {
             );
         },
         Subcommands::MoveGroup { from, to, mon_group } => {
-            swap_workspace_groups(
+            workspaces::swap_workspace_groups(
                 &mut connection,
                 &config,
                 from,
@@ -65,7 +56,7 @@ fn main() {
             );
         },
         Subcommands::MoveContainer { destination, focus, mon_group } => {
-            move_container_to_workspace_group(
+            workspaces::move_container_to_workspace_group(
                 &mut connection,
                 &config,
                 &destination,
@@ -73,14 +64,17 @@ fn main() {
                 focus,
             );
         },
+        Subcommands::Reorganize {  } => {
+            workspaces::reorganize_everything(&mut connection, &config);
+        }
         Subcommands::Print { waybar_module, subscribe } => {
             let printer = if waybar_module {
-                print_waybar_module
+                workspaces::print_waybar_module
             } else {
-                print_state_text
+                workspaces::print_state_text
             };
             if subscribe {
-                subscribe_and_print(connection, printer);
+                workspaces::subscribe_and_print(connection, printer);
             } else {
                 printer(&mut connection);
             }
