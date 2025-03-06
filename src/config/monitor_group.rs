@@ -14,19 +14,12 @@ pub struct MonitorGroup {
 
 
 impl MonitorGroup {
-    #[allow(dead_code)]
-    /// Creates a new [`MonitorGroup`].
-    pub fn new(name: &str, monitors: Vec<String>) -> Self {
-        return Self {
-            name: name.to_string(),
-            monitors,
-        };
-    }
-
     pub fn get_name(&self) -> &str {
         return &self.name;
     }
 
+    /// The first active monitor in the list of monitors for the group
+    /// is considered the main monitor. Return its index.
     pub fn get_main_monitor_index(&self, active_monitors: &HashSet<String>) -> usize {
         self.monitors.iter()
             .position(|monitor| active_monitors.contains(monitor))
