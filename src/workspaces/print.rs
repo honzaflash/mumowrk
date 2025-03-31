@@ -6,19 +6,31 @@ use crate::sway_commands::get_workspaces;
 use super::workspace_id::WorkspaceId;
 
 
-pub fn subscribe_and_print(mut connection: Connection, printer: fn(&mut Connection)) {
+pub fn get_current_index(connection: &mut Connection, monitor_group: &str) -> String {
+    let workspaces = get_workspaces(connection);
+    let visible_workspace = workspaces.iter()
+        .filter(|workspace| workspace.visible)
+        .filter_map(|workspace| WorkspaceId::parse_safe(&workspace.name))
+        .filter(|workspace_id| workspace_id.get_monitor_group_name() == monitor_group)
+        .next();
+
+    visible_workspace
+        .map_or("?".to_string(), |workspace_id| workspace_id.get_index().to_string())
+}
+
+pub fn subscribe_and_print(connection: &mut Connection, printer: fn(&mut Connection)) {
     // Print initial state
-    printer(&mut connection);
+    printer(connection);
     // Open a new connection to listen for events
     let listen_connection = Connection::new().expect("Failed to connect to swayipc");
     let events = listen_connection.subscribe([EventType::Workspace]).expect("Failed to subscribe to workspace events");
     // Print updates as events come
     for _ in events {
-        printer(&mut connection);
+        printer(connection);
     }
 }
 
-pub fn print_state_text(connection: &mut Connection) {
+pub fn print_state_plain(connection: &mut Connection) {
     let simple_formatters = StateFormatters {
         unmanaged: StateFormattersUnmanaged {
             focused: |name| format!("*{}*", name),
@@ -57,6 +69,17 @@ struct ModuleInput {
 }
 
 pub fn print_waybar_module(connection: &mut Connection) {
+    let display_text = get_state_rich_text(connection);
+    let output = ModuleInput {
+        text: display_text,
+        class: Some("mumowrk".to_string()),
+        tooltip: Some("You can switch between these using `mumowrk`".to_string()),
+    };
+    println!("{}", serde_json::to_string(&output).unwrap());
+}
+
+/// Return a fromatted string with Pango markup representing the current state
+pub fn get_state_rich_text(connection: &mut Connection) -> String {
     let formatters = StateFormatters {
         unmanaged: StateFormattersUnmanaged {
             focused: |name| format!("<u><b>{}</b></u>", name),
@@ -83,13 +106,7 @@ pub fn print_waybar_module(connection: &mut Connection) {
         separator: "".to_string(),
     };
 
-    let display_text = format_state(get_state(connection), &formatters);
-    let output = ModuleInput {
-        text: display_text,
-        class: Some("mumowrk".to_string()),
-        tooltip: Some("You can switch between these".to_string()),
-    };
-    println!("{}", serde_json::to_string(&output).unwrap());
+    format_state(get_state(connection), &formatters)
 }
 
 

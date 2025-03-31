@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use serde::Serialize;
 
 const DEFAULT_CONFIG_PATH: &str = "$HOME/.config/mumowrk/config.yml";
 
@@ -18,6 +19,18 @@ pub struct Cli {
     pub socket: Option<String>,
 }
 
+#[derive(Debug, clap::ValueEnum, Clone, Default, Serialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum NotificationVerbosity {
+    #[default]
+    /// Don't show any notification
+    None,
+    /// Show only current workspace group index
+    Index,
+    /// Show the whole state summary
+    Summary,
+}
+
 #[derive(Subcommand, Debug)]
 pub enum Subcommands {
     /// Initialize workspaces based on the configuration
@@ -30,6 +43,9 @@ pub enum Subcommands {
         /// Target monitor group name (default: first group in config)
         #[arg(short, long, value_name = "MONITOR_GROUP", required = false)]
         mon_group: Option<String>,
+        /// Send a notification about the new state (if used as flag, it will be set to `index`)
+        #[arg(short, long, value_name = "LEVEL", default_missing_value = "index", default_value = "none", num_args = 0..=1)]
+        notify: NotificationVerbosity,
     },
     /// Move (reorder) workspace groups
     #[clap(visible_alias = "swap")]
