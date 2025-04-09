@@ -1,5 +1,5 @@
 use clap::Parser;
-use sway::commands::get_active_monitors;
+use sway::commands::get_active_monitor_names;
 use swayipc::Connection;
 
 mod workspaces;
@@ -59,7 +59,7 @@ fn main() {
                 NotificationVerbosity::Summary =>
                     workspaces::get_state_rich_text(&mut connection),
             };
-            let active_monitors = get_active_monitors(&mut connection);
+            let active_monitors = get_active_monitor_names(&mut connection);
             let monitor_group = config.get_group(&target_mon_group).unwrap();
             let target_monitor = &monitor_group.monitors[
                 monitor_group.get_main_monitor_index(&active_monitors)

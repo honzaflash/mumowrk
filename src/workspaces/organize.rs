@@ -15,7 +15,7 @@ use crate::workspaces::WorkspaceId;
 pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
     // TODO:
     // - save old state
-    // - focus ?
+    // - focus the container that was focused before
 
     let output_nodes = commands::get_tree(connection).nodes;
     let _ = File::create(
@@ -32,7 +32,7 @@ pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
 }
 
 fn reorganize_monitor_group(connection: &mut Connection, config: &Config, monitor_group: &MonitorGroup) {
-    let active_monitors = commands::get_active_monitors(connection);
+    let active_monitors = commands::get_active_monitor_names(connection);
     // get indices of active monitors in the monitor group
     let monitor_indices: HashMap<String, usize> = active_monitors.iter()
         .filter_map(|monitor_name| {
@@ -85,7 +85,8 @@ fn reorganize_workspace_group(
                 let id = WorkspaceId::parse(&workspace.name);
                 id.get_monitor_index() == **index
             })
-        });
+        })
+        .sorted_by_key(|(_, index)| **index);
     let mut used_foreign_monitor = false;
 
     for workspace in workspaces {

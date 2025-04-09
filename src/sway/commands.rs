@@ -1,6 +1,7 @@
 use std::collections::HashSet;
+use super::utils::get_output_descriptor;
 
-use swayipc::{Connection, Node, NodeType, Workspace};
+use swayipc::{Connection, Node, NodeType, Output, Workspace};
 
 // TODO use macros for these at some point?
 //   at least for the commands formatting
@@ -35,15 +36,31 @@ pub fn get_workspace_tree<Id: std::fmt::Display>(connection: &mut Connection, wo
         .cloned()
 }
 
-/// Get list of active outputs from the sway IPC connection
+/// Get list of active outputs from the sway IPC connection.
 /// 
 /// # Panics
 /// Panics if the request fails
-pub fn get_active_monitors(connection: &mut Connection) -> HashSet<String> {
+pub fn get_active_monitors(connection: &mut Connection) -> Vec<Output> {
     let outputs = connection.get_outputs().expect("Failed to get outputs");
     outputs.iter()
         .filter(|output| output.active)
-        .map(|output| output.name.clone())
+        .cloned()
+        .collect()
+}
+
+/// Get set of active outputs from the sway IPC connection.
+/// Set includes output name and descriptor (make+model+serial) for each.
+/// 
+/// # Panics
+/// Panics if the request fails
+pub fn get_active_monitor_names(connection: &mut Connection) -> HashSet<String> {
+    let outputs = connection.get_outputs().expect("Failed to get outputs");
+    outputs.iter()
+        .filter(|output| output.active)
+        .flat_map(|output| [
+            output.name.clone(),
+            get_output_descriptor(&output),
+        ].into_iter())
         .collect()
 }
 
@@ -95,7 +112,7 @@ pub fn move_container_by_id<Id: std::fmt::Display>(connection: &mut Connection, 
 /// Panics if the command fails
 pub fn assign_workspace_to_monitor<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id, monitor: &str) {
     connection.run_command(
-        format!("workspace {} output {}", workspace_id, monitor)
+        format!("workspace \"{}\" output \"{}\"", workspace_id, monitor)
     ).expect("Failed to assign workspace to a monitor");
 }
 
@@ -116,7 +133,7 @@ pub fn get_assign_and_focus_workspace_command<Id: std::fmt::Display>(
     workspace_id: &Id,
     monitor: &str,
 ) -> String {
-    format!("workspace {} output {}; workspace {}", workspace_id, monitor, workspace_id)
+    format!("workspace \"{}\" output \"{}\"; workspace \"{}\"", workspace_id, monitor, workspace_id)
 }
 
 /// Format a pair of commands to assign and actiate a workspace

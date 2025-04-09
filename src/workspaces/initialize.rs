@@ -1,6 +1,6 @@
 use swayipc::Connection;
 
-use crate::{config::{Config, FIRST_WORKSPACE_GROUP}, sway::commands::{assign_workspace_to_monitor, focus_workspace, get_active_monitors}};
+use crate::{config::{Config, FIRST_WORKSPACE_GROUP}, sway::commands::{assign_workspace_to_monitor, focus_workspace, get_active_monitor_names}};
 use super::workspace_id::WorkspaceId;
 
 
@@ -9,7 +9,7 @@ pub fn init_workspaces(connection: &mut Connection, config: &Config) {
         return;
     }
 
-    let active_monitors = get_active_monitors(connection);
+    let active_monitors = get_active_monitor_names(connection);
 
     // Assign every managed monitor a workspace per the configured grouping
     for group in config.groups.iter() {

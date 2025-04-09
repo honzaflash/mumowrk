@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use swayipc::Connection;
 
-use crate::{config::Config, sway::commands::{get_active_monitors, get_workspaces, rename_workspace}};
+use crate::{config::Config, sway::commands::{get_active_monitor_names, get_workspaces, rename_workspace}};
 use super::{utils::{generate_random_string, get_target_index}, workspace_id::WorkspaceId};
 
 
@@ -16,7 +16,7 @@ pub fn swap_workspace_groups(
     // focus: bool,
     mon_group: Option<&String>,
 ) {
-    let active_monitors = get_active_monitors(connection);
+    let active_monitors = get_active_monitor_names(connection);
     let workspaces = get_workspaces(connection);
     let workspace_names: HashSet<String> = workspaces.iter()
         .map(|workspace| workspace.name.clone())

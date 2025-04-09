@@ -2,7 +2,8 @@ use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway::commands::{focus_workspace, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::commands::{focus_workspace, get_active_monitor_names, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::utils::get_output_descriptor;
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
@@ -28,7 +29,16 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         // focused workspace is not managed, find the index of the monitor if
         // it is part of the target monitor group to switch to a managed workspace
         config.get_group(monitor_group).and_then(
-            |group| group.get_monitor_index(&focused_workspace.output)
+            |group|
+                group.get_monitor_index(&focused_workspace.output)
+                    // The monitor might be configured using its descriptor, so try looking that up
+                    .or_else(|| {
+                        get_active_monitors(connection).iter()
+                            .find(|output| &output.name == &focused_workspace.output)
+                            .and_then(|output|
+                                group.get_monitor_index(&get_output_descriptor(output))
+                            )
+                    })
         )
     );
     // If the monitor index to focus is None, keep the original focus
@@ -37,7 +47,7 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
             WorkspaceId::new(monitor_group, focused_monitor_index,next_index).to_string()
         ).unwrap_or(focused_workspace.name.clone());
 
-    let active_monitors = get_active_monitors(connection);
+    let active_monitors = get_active_monitor_names(connection);
     // Switch the workspaces
     let group_config = config.get_group(monitor_group)
         .expect("Monitor group not found");
