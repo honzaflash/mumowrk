@@ -8,7 +8,7 @@ use swayipc::{Connection, Node, NodeType, Workspace};
 
 /// Get list of current workspaces from the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the request fails
 pub fn get_workspaces(connection: &mut Connection) -> Vec<Workspace> {
     connection.get_workspaces().expect("Failed to get workspaces")
@@ -16,7 +16,7 @@ pub fn get_workspaces(connection: &mut Connection) -> Vec<Workspace> {
 
 /// Get node tree from the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the request fails
 pub fn get_tree(connection: &mut Connection) -> Node {
     connection.get_tree().expect("Failed to get workspaces")
@@ -24,7 +24,7 @@ pub fn get_tree(connection: &mut Connection) -> Node {
 
 /// Find workspace node tree by name in the tree from the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the request fails
 pub fn get_workspace_tree<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id) -> Option<Node> {
     get_tree(connection).nodes.iter()
@@ -37,7 +37,7 @@ pub fn get_workspace_tree<Id: std::fmt::Display>(connection: &mut Connection, wo
 
 /// Get list of active outputs from the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the request fails
 pub fn get_active_monitors(connection: &mut Connection) -> HashSet<String> {
     let outputs = connection.get_outputs().expect("Failed to get outputs");
@@ -50,7 +50,7 @@ pub fn get_active_monitors(connection: &mut Connection) -> HashSet<String> {
 /// Run a `workspace` command over the sway IPC connection
 /// to activate a workspace.
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn focus_workspace<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id) {
     connection.run_command(
@@ -60,7 +60,7 @@ pub fn focus_workspace<Id: std::fmt::Display>(connection: &mut Connection, works
 
 /// Run a `rename workspace OLD to NEW` command over the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn rename_workspace<IdA: std::fmt::Display, IdB: std::fmt::Display>(connection: &mut Connection, old: &IdA, new: &IdB) {
     connection.run_command(
@@ -70,7 +70,7 @@ pub fn rename_workspace<IdA: std::fmt::Display, IdB: std::fmt::Display>(connecti
 
 /// Run a `move container to workspace` command over the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn move_container<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id) {
     connection.run_command(
@@ -80,7 +80,7 @@ pub fn move_container<Id: std::fmt::Display>(connection: &mut Connection, worksp
 
 /// Run a `move container to workspace` command for a criteria over the sway IPC connection
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn move_container_by_id<Id: std::fmt::Display>(connection: &mut Connection, container_id: i64, workspace_id: &Id) {
     connection.run_command(
@@ -91,7 +91,7 @@ pub fn move_container_by_id<Id: std::fmt::Display>(connection: &mut Connection, 
 /// Run a `workspace` command over the sway IPC connection
 /// to assign a workspace to an output
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn assign_workspace_to_monitor<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id, monitor: &str) {
     connection.run_command(
@@ -102,7 +102,7 @@ pub fn assign_workspace_to_monitor<Id: std::fmt::Display>(connection: &mut Conne
 /// Move workspace to monitor via the sway IPC connection.
 /// First focus the workspace and then move it to the monitor.
 /// 
-/// # Panincs
+/// # Panics
 /// Panics if the command fails
 pub fn move_workspace_to_monitor<Id: std::fmt::Display>(connection: &mut Connection, workspace_id: &Id, monitor: &str) {
     connection.run_command(
