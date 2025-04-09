@@ -6,7 +6,7 @@ use itertools::Itertools;
 use swayipc::{Connection, Workspace};
 
 use crate::config::{Config, MonitorGroup};
-use crate::sway_commands;
+use crate::sway::commands;
 use crate::workspaces::WorkspaceId;
 
 
@@ -17,7 +17,7 @@ pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
     // - save old state
     // - focus ?
 
-    let output_nodes = sway_commands::get_tree(connection).nodes;
+    let output_nodes = commands::get_tree(connection).nodes;
     let _ = File::create(
         shellexpand::full("~/.config/mumowrk/old_tree.json").unwrap().into_owned()
     ).map(|mut file| {
@@ -32,7 +32,7 @@ pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
 }
 
 fn reorganize_monitor_group(connection: &mut Connection, config: &Config, monitor_group: &MonitorGroup) {
-    let active_monitors = sway_commands::get_active_monitors(connection);
+    let active_monitors = commands::get_active_monitors(connection);
     // get indices of active monitors in the monitor group
     let monitor_indices: HashMap<String, usize> = active_monitors.iter()
         .filter_map(|monitor_name| {
@@ -40,7 +40,7 @@ fn reorganize_monitor_group(connection: &mut Connection, config: &Config, monito
         })
         .collect();
 
-    let all_workspaces = sway_commands::get_workspaces(connection);
+    let all_workspaces = commands::get_workspaces(connection);
     // group all the workspaces in the monitor group into workspace groups
     let workspace_groups = all_workspaces.iter()
         .filter_map(|workspace| {
@@ -109,11 +109,11 @@ fn reorganize_workspace_group(
             }));
         if let Some((name, index)) = monitor_candidate_entry {
             // just move the workspace to the correct or next available monitor
-            sway_commands::move_workspace_to_monitor(connection, &id, name);
+            commands::move_workspace_to_monitor(connection, &id, name);
             println!("Move workspace {} to monitor {}", id, name);
             if *index != id.get_monitor_index() {
                 // rename the workspace if the monitor was not the matching one
-                sway_commands::rename_workspace(connection, &id, &WorkspaceId::new(
+                commands::rename_workspace(connection, &id, &WorkspaceId::new(
                     id.get_monitor_group_name(),
                     *index,
                     id.get_index(),
@@ -131,10 +131,10 @@ fn reorganize_workspace_group(
             // use the main monitor of the monitor group
             monitor_group.get_main_monitor_index(&monitor_indices.keys().cloned().collect())
         };
-        let workspace_tree = sway_commands::get_workspace_tree(connection, &id)
+        let workspace_tree = commands::get_workspace_tree(connection, &id)
             .expect("Could not find workspace tree for workspace that is supposed to exist");
         for container in workspace_tree.nodes {
-            sway_commands::move_container_by_id(connection, container.id, &WorkspaceId::new(
+            commands::move_container_by_id(connection, container.id, &WorkspaceId::new(
                 id.get_monitor_group_name(),
                 main_monitor_index,
                 id.get_index(),

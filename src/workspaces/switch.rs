@@ -2,7 +2,7 @@ use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway_commands::{focus_workspace, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::commands::{focus_workspace, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 

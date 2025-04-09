@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use swayipc::Connection;
 
-use crate::{config::Config, sway_commands::{get_active_monitors, get_workspaces, rename_workspace}};
+use crate::{config::Config, sway::commands::{get_active_monitors, get_workspaces, rename_workspace}};
 use super::{utils::{generate_random_string, get_target_index}, workspace_id::WorkspaceId};
 
 

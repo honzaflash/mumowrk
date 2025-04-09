@@ -1,6 +1,6 @@
 use swayipc::Connection;
 
-use crate::{config::{Config, FIRST_WORKSPACE_GROUP}, sway_commands::{assign_workspace_to_monitor, focus_workspace, get_active_monitors}};
+use crate::{config::{Config, FIRST_WORKSPACE_GROUP}, sway::commands::{assign_workspace_to_monitor, focus_workspace, get_active_monitors}};
 use super::workspace_id::WorkspaceId;
 
 

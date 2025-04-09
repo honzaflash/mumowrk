@@ -1,11 +1,11 @@
 use clap::Parser;
-use sway_commands::get_active_monitors;
+use sway::commands::get_active_monitors;
 use swayipc::Connection;
 
 mod workspaces;
 mod config;
 mod cli;
-mod sway_commands;
+mod sway;
 mod notify;
 
 use config::Config;
@@ -49,7 +49,8 @@ fn main() {
                 &target_mon_group,
                 &destination,
             );
-            // TODO: move this to a function and add it to other subcommands
+
+            // @TODO: move this to a function and add it to other subcommands
             let notification_text = match notify {
                 NotificationVerbosity::None =>
                     { return; },

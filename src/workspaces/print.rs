@@ -1,7 +1,7 @@
 use itertools::{Either, Itertools};
 use swayipc::{Connection, EventType};
 
-use crate::sway_commands::get_workspaces;
+use crate::sway::commands::get_workspaces;
 
 use super::workspace_id::WorkspaceId;
 
