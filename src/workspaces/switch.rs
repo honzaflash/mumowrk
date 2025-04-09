@@ -2,7 +2,7 @@ use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway_commands::{focus_workspace, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway_commands::{focus_workspace, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
@@ -37,11 +37,13 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
             WorkspaceId::new(monitor_group, focused_monitor_index,next_index).to_string()
         ).unwrap_or(focused_workspace.name.clone());
 
+    let active_monitors = get_active_monitors(connection);
     // Switch the workspaces
     let group_config = config.get_group(monitor_group)
         .expect("Monitor group not found");
     let commands = group_config.monitors.iter()
         .enumerate()
+        .filter(|(_, monitor)| active_monitors.contains(*monitor))
         .map(|(monitor_index, monitor)| {
             let workspace_id = WorkspaceId::new(monitor_group, monitor_index, next_index);
             get_assign_and_focus_workspace_command(&workspace_id, monitor)
