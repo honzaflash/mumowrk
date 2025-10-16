@@ -1,5 +1,4 @@
 use clap::Parser;
-use sway::commands::get_active_monitor_names;
 use swayipc::Connection;
 
 mod workspaces;
@@ -9,8 +8,8 @@ mod sway;
 mod notify;
 
 use config::Config;
-use cli::{Cli, NotificationVerbosity, Subcommands};
-use notify::dbus_notify;
+use cli::{Cli, Subcommands};
+use notify::maybe_send_update_notification;
 
 
 
@@ -50,21 +49,8 @@ fn main() {
                 &destination,
             );
 
-            // @TODO: move this to a function and add it to other subcommands
-            let notification_text = match notify {
-                NotificationVerbosity::None =>
-                    { return; },
-                NotificationVerbosity::Index =>
-                    format!("<u><b>{}</b></u>", workspaces::get_current_index(&mut connection, &target_mon_group)),
-                NotificationVerbosity::Summary =>
-                    workspaces::get_state_rich_text(&mut connection),
-            };
-            let active_monitors = get_active_monitor_names(&mut connection);
-            let monitor_group = config.get_group(&target_mon_group).unwrap();
-            let target_monitor = &monitor_group.monitors[
-                monitor_group.get_main_monitor_index(&active_monitors)
-            ];
-            dbus_notify(&notification_text, &target_monitor);
+            // @TODO: add this to other subcommands that switch workspaces
+            maybe_send_update_notification(&mut connection, notify, &config, &target_mon_group);
         },
         Subcommands::MoveGroup { from, to, mon_group } => {
             workspaces::swap_workspace_groups(

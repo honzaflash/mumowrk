@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use super::utils::get_output_descriptor;
 
-use swayipc::{Connection, Node, NodeType, Output, Workspace};
+use swayipc::{Connection, Node, NodeType, Workspace};
 
 // TODO use macros for these at some point?
 //   at least for the commands formatting
@@ -34,18 +34,6 @@ pub fn get_workspace_tree<Id: std::fmt::Display>(connection: &mut Connection, wo
             |name| name == &workspace_id.to_string()
         ).unwrap_or(false) && workspace_node.node_type == NodeType::Workspace)
         .cloned()
-}
-
-/// Get list of active outputs from the sway IPC connection.
-/// 
-/// # Panics
-/// Panics if the request fails
-pub fn get_active_monitors(connection: &mut Connection) -> Vec<Output> {
-    let outputs = connection.get_outputs().expect("Failed to get outputs");
-    outputs.iter()
-        .filter(|output| output.active)
-        .cloned()
-        .collect()
 }
 
 /// Get set of active outputs from the sway IPC connection.

@@ -2,8 +2,8 @@ use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway::commands::{focus_workspace, get_active_monitor_names, get_active_monitors, get_assign_and_focus_workspace_command, get_workspaces};
-use crate::sway::utils::get_output_descriptor;
+use crate::sway::commands::{focus_workspace, get_active_monitor_names, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::utils::get_output_descriptor_by_name;
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
@@ -29,16 +29,11 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         // focused workspace is not managed, find the index of the monitor if
         // it is part of the target monitor group to switch to a managed workspace
         config.get_group(monitor_group).and_then(
-            |group|
-                group.get_monitor_index(&focused_workspace.output)
-                    // The monitor might be configured using its descriptor, so try looking that up
-                    .or_else(|| {
-                        get_active_monitors(connection).iter()
-                            .find(|output| &output.name == &focused_workspace.output)
-                            .and_then(|output|
-                                group.get_monitor_index(&get_output_descriptor(output))
-                            )
-                    })
+            |group| group.get_monitor_index(&focused_workspace.output)
+                // The monitor might be configured using its descriptor, so try looking that up too
+                .or_else(|| get_output_descriptor_by_name(connection, &focused_workspace.output)
+                    .and_then(|descriptor| group.get_monitor_index(&descriptor))
+                )
         )
     );
     // If the monitor index to focus is None, keep the original focus
