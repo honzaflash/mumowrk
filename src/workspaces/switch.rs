@@ -1,8 +1,10 @@
+use std::collections::HashSet;
+
 use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway::commands::{focus_workspace, get_active_monitor_names, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::commands::{focus_workspace, get_active_outputs, get_assign_and_focus_workspace_command, get_workspaces};
 use crate::sway::utils::get_output_descriptor_by_name;
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
@@ -37,18 +39,27 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
         )
     );
     // If the monitor index to focus is None, keep the original focus
+    // because the workspace is not in target monitor group
     let next_focus = monitor_index_to_focus
         .map(|focused_monitor_index|
             WorkspaceId::new(monitor_group, focused_monitor_index,next_index).to_string()
         ).unwrap_or(focused_workspace.name.clone());
 
-    let active_monitors = get_active_monitor_names(connection);
+    let active_outputs = get_active_outputs(connection);
+    let active_outputs_flat: HashSet<String> = active_outputs.iter()
+        .flat_map(|(name, desc)| [name.clone(), desc.clone()].into_iter())
+        .collect();
     // Switch the workspaces
     let group_config = config.get_group(monitor_group)
         .expect("Monitor group not found");
     let commands = group_config.monitors.iter()
         .enumerate()
-        .filter(|(_, monitor)| active_monitors.contains(*monitor))
+        .filter(|(_, monitor)| active_outputs_flat.contains(*monitor))
+        .filter(|(_, monitor)| !active_outputs
+            .get(*monitor)
+            .map(|desc| group_config.monitors.contains(desc))
+            .unwrap_or_default()
+        )
         .map(|(monitor_index, monitor)| {
             let workspace_id = WorkspaceId::new(monitor_group, monitor_index, next_index);
             get_assign_and_focus_workspace_command(&workspace_id, monitor)

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use super::utils::get_output_descriptor;
 
 use swayipc::{Connection, Node, NodeType, Workspace};
@@ -49,6 +49,22 @@ pub fn get_active_monitor_names(connection: &mut Connection) -> HashSet<String> 
             output.name.clone(),
             get_output_descriptor(&output),
         ].into_iter())
+        .collect()
+}
+
+/// Get a map of active outputs from the sway IPC connection.
+/// These are output descriptors (make+model+serial) by output name.
+/// 
+/// # Panics
+/// Panics if the request fails
+pub fn get_active_outputs(connection: &mut Connection) -> HashMap<String, String> {
+    connection.get_outputs().expect("Failed to get outputs")
+        .iter()
+        .filter(|output| output.active)
+        .map(|output| (
+            output.name.clone(),
+            get_output_descriptor(&output),
+        ))
         .collect()
 }
 
