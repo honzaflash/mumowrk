@@ -1,6 +1,10 @@
+use std::collections::HashSet;
+
 use rand::{Rng, distr::Alphanumeric};
 use regex::Regex;
-use swayipc::Workspace;
+use swayipc::{Connection, Workspace};
+
+use crate::sway::commands::get_active_outputs;
 
 use super::workspace_id::WorkspaceId;
 
@@ -53,3 +57,27 @@ pub(super) fn generate_random_string(length: usize) -> String {
         .map(char::from)
         .collect()
 }
+
+/// Return a set of unique active outputs that are listed in the config
+///
+/// For each output return its descriptor if it's found in the config,
+/// otherwise the output's name if it's found in the config.
+/// (names are like "HDMI-A-1" and descriptors are like 
+/// "LG Electronics LG HDR 4K 0x0000000")
+///
+/// # Panics
+/// Panics if requesting list of ouputs from Sway IPC fails
+pub(super) fn get_active_group_outputs(connection: &mut Connection, monitors: &Vec<String>) -> HashSet<String> {
+    get_active_outputs(connection).into_iter()
+        .filter_map(|(name, descriptor)|
+            if monitors.contains(&descriptor) {
+                Some(descriptor)
+            } else if monitors.contains(&name) {
+                Some(name)
+            } else {
+                None
+            }
+        )
+        .collect()
+}
+

@@ -7,6 +7,8 @@ use swayipc::{Connection, NodeType, Workspace};
 
 use crate::config::{Config, MonitorGroup};
 use crate::sway::commands;
+use crate::sway::utils::{get_output_descriptor_by_name};
+use crate::workspaces::utils::get_active_group_outputs;
 use crate::workspaces::{WorkspaceId, switch_workspace_groups};
 
 
@@ -48,7 +50,7 @@ pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
 }
 
 fn reorganize_monitor_group(connection: &mut Connection, config: &Config, monitor_group: &MonitorGroup) {
-    let active_monitors = commands::get_active_monitor_names(connection);
+    let active_monitors = get_active_group_outputs(connection, &monitor_group.monitors);
     // get indices of active monitors in the monitor group
     let monitor_indices: HashMap<String, usize> = active_monitors.iter()
         .filter_map(|monitor_name| {
@@ -108,7 +110,12 @@ fn reorganize_workspace_group(
     for workspace in workspaces {
         let id = WorkspaceId::parse(&workspace.name);
 
-        if monitor_indices.get(&workspace.output) == Some(&id.get_monitor_index()) {
+        let output_descriptor = get_output_descriptor_by_name(connection, &workspace.output);
+        // First try the output descriptor if not in the map, try output name
+        let current_monitor_index = output_descriptor
+            .and_then(|descriptor| monitor_indices.get(&descriptor))
+            .or(monitor_indices.get(&workspace.output));
+        if current_monitor_index == Some(&id.get_monitor_index()) {
             // workspace is on the correct monitor
             println!("Workspace {} is already on the correct monitor", id);
             continue;
