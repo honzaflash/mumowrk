@@ -3,11 +3,11 @@ use std::fs::File;
 use std::io::Write;
 
 use itertools::Itertools;
-use swayipc::{Connection, Workspace};
+use swayipc::{Connection, NodeType, Workspace};
 
 use crate::config::{Config, MonitorGroup};
 use crate::sway::commands;
-use crate::workspaces::WorkspaceId;
+use crate::workspaces::{WorkspaceId, switch_workspace_groups};
 
 
 /// Reorganize all containers and workspaces to match configuration and current
@@ -15,19 +15,35 @@ use crate::workspaces::WorkspaceId;
 pub fn reorganize_everything(connection: &mut Connection, config: &Config) {
     // TODO:
     // - save old state
-    // - focus the container that was focused before
 
-    let output_nodes = commands::get_tree(connection).nodes;
+    let tree_root = commands::get_tree(connection);
     let _ = File::create(
         shellexpand::full("~/.config/mumowrk/old_tree.json").unwrap().into_owned()
     ).map(|mut file| {
-        file.write_all(serde_json::to_string(&output_nodes).unwrap().as_bytes())
+        file.write_all(serde_json::to_string(&tree_root).unwrap().as_bytes())
     }).inspect_err(|e| eprintln!("Could not save old tree: {}", e));
+
+    // Find focused workspaces for every monitor
+    let focused_workspace_ids = tree_root.nodes.iter().map(
+        |output| output
+            .find_focused_as_ref(|node| node.node_type == NodeType::Workspace)
+            .and_then(|workspace| workspace.name.as_ref())
+            .and_then(|name| WorkspaceId::parse_safe(name))
+    );
+    let focused_workspace_groups: HashMap<_, _> = focused_workspace_ids
+        .flatten() // unwraps Some values while skipping None
+        .map(|id| (id.get_monitor_group_name().to_string(), id.get_index()))
+        .collect();
 
     // Reorganize workspace groups for each configured monitor group
     for monitor_group in &config.groups {
         println!("Reorganize monitor group {}", monitor_group.name);
         reorganize_monitor_group(connection, config, monitor_group);
+    }
+
+    // Change focuse back to the originally focused workspace groups
+    for (monitor_group, index) in focused_workspace_groups {
+        switch_workspace_groups(connection, config, &monitor_group, &index.to_string());
     }
 }
 
