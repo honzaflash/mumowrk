@@ -1,11 +1,10 @@
-use std::collections::HashSet;
-
 use itertools::Itertools;
 use swayipc::Connection;
 
 use crate::config::Config;
-use crate::sway::commands::{focus_workspace, get_active_outputs, get_assign_and_focus_workspace_command, get_workspaces};
-use crate::sway::utils::get_output_descriptor_by_name;
+use crate::sway::commands::{focus_workspace, get_assign_and_focus_workspace_command, get_workspaces};
+use crate::sway::utils::{get_output_descriptor_by_name};
+use crate::workspaces::utils::get_active_group_outputs;
 use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
@@ -45,22 +44,14 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
             WorkspaceId::new(monitor_group, focused_monitor_index,next_index).to_string()
         ).unwrap_or(focused_workspace.name.clone());
 
-    let active_outputs = get_active_outputs(connection);
-    let active_outputs_flat: HashSet<String> = active_outputs.iter()
-        .flat_map(|(name, desc)| [name.clone(), desc.clone()].into_iter())
-        .collect();
     // Switch the workspaces
     let group_config = config.get_group(monitor_group)
         .expect("Monitor group not found");
-    let commands = group_config.monitors.iter()
-        .enumerate()
-        .filter(|(_, monitor)| active_outputs_flat.contains(*monitor))
-        .filter(|(_, monitor)| !active_outputs
-            .get(*monitor)
-            .map(|desc| group_config.monitors.contains(desc))
-            .unwrap_or_default()
-        )
-        .map(|(monitor_index, monitor)| {
+    let active_outputs = get_active_group_outputs(connection, &group_config.monitors);
+    let commands = active_outputs.iter()
+        .map(|monitor| {
+            // the monitor is from the monitor group so it should always be found
+            let monitor_index = group_config.get_monitor_index(monitor).expect("Monitor not found in the monitor group.");
             let workspace_id = WorkspaceId::new(monitor_group, monitor_index, next_index);
             get_assign_and_focus_workspace_command(&workspace_id, monitor)
         })
