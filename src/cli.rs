@@ -5,7 +5,11 @@ const DEFAULT_CONFIG_PATH: &str = "$HOME/.config/mumowrk/config.yml";
 
 /// Multi Monitor Workspace Manager
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = "MuMoWrk is a tool that manages workspaces across multiple monitors.")]
+#[command(
+    version,
+    about,
+    long_about = "MuMoWrk is a tool that manages workspaces across multiple monitors."
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Subcommands,
@@ -31,6 +35,9 @@ pub enum NotificationVerbosity {
     Summary,
 }
 
+// TODO: rename stuff so it makes more sense
+// - switch => ...
+// -
 #[derive(Subcommand, Debug)]
 pub enum Subcommands {
     /// Initialize workspaces based on the configuration

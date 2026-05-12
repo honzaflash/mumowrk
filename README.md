@@ -1,4 +1,4 @@
-# MuMoWrk
+# MuMoWrk aka `mmwrk`
 The MultiMonitor Workspace manager for Sway (could also work for i3).
 
 This readme is still WIP
@@ -15,30 +15,33 @@ Intended for use with keybindings.
 
 # Install
 Run `cargo build --release` which will create an executable
-at `mumowrk/target/release/mumowrk`.
+at `mumowrk/target/release/mmwrk`.
 
 Then you can copy it or link to it somewhere on your `PATH`
-like `/usr/local/bin/mumowrk`.
+like `/usr/local/bin/mmwrk`.
+
+Note that `PATH` in the shell used by `sway` might be different
+from the `PATH` in your prefered daily-use shell.
 
 # Usage
-To see the basic usage run `mumowrk help`, for subcommands
-`mumowrk switch --help`, etc.
+To see the basic usage run `mmwrk help`, for subcommands
+`mmwrk switch --help`, etc.
 
-First you need a config file that will tell `mumowrk`
+First you need a config file that will tell `mmwrk`
 which monitors should be in a group. This should be here:
 `~/.config/mumowrk/config.yml`. You can look at the reference
 configuration `config.example.yml` in the project directory.
 
-To initialize workspaces run `mumowrk init` then switch between them
-with `mumowrk switch INDEX -m GROUP`.
+To initialize workspaces run `mmwrk init` then switch between them
+with `mmwrk switch INDEX -m GROUP`.
 
 You might want to add something like this to your sway config:
 ```
-exec mumowrk init
+exec mmwrk init
 
-bindsym $mod+Ctrl+$left exec mumowrk switch -m G1 -1
-bindsym $mod+Ctrl+Left exec  mumowrk switch -m G1 -1
-bindsym $mod+Ctrl+$right exec mumowrk switch -m G1 +1
-bindsym $mod+Ctrl+Right exec  mumowrk switch -m G1 +1
+bindsym $mod+Ctrl+$left exec mmwrk switch -m G1 -1
+bindsym $mod+Ctrl+Left exec  mmwrk switch -m G1 -1
+bindsym $mod+Ctrl+$right exec mmwrk switch -m G1 +1
+bindsym $mod+Ctrl+Right exec  mmwrk switch -m G1 +1
 ```
 
