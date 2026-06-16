@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use swayipc::Connection;
+use swayipc::{Connection, Workspace};
 
 use crate::config::Config;
 use crate::sway::commands::{focus_workspace, get_assign_and_focus_workspace_command, get_workspaces};
@@ -9,13 +9,13 @@ use super::utils::{find_focused_workspace, get_target_index};
 use super::workspace_id::WorkspaceId;
 
 
-pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, monitor_group: &str, destination: &str) {
-    let workspaces = get_workspaces(connection);
-
-    let next_index = get_target_index(&workspaces, monitor_group, destination);
-
-    // Find the workspace that should be in focus after the switch
-    let focused_workspace = find_focused_workspace(&workspaces);
+fn determine_focus_after_switch(
+    connection: &mut Connection,
+    config: &Config,
+    focused_workspace: &Workspace,
+    monitor_group: &str,
+    next_index: i32,
+) -> String {
     let focused_workspace_id = WorkspaceId::parse_safe(&focused_workspace.name);
     let monitor_index_to_focus = focused_workspace_id.and_then(|id| {
         // focused workspace is managed, was able to parse the ID
@@ -41,8 +41,24 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
     // because the workspace is not in target monitor group
     let next_focus = monitor_index_to_focus
         .map(|focused_monitor_index|
-            WorkspaceId::new(monitor_group, focused_monitor_index,next_index).to_string()
+            WorkspaceId::new(monitor_group, focused_monitor_index, next_index).to_string()
         ).unwrap_or(focused_workspace.name.clone());
+
+    next_focus
+}
+
+
+pub fn switch_workspace_groups(
+    connection: &mut Connection,
+    config: &Config,
+    monitor_group: &str,
+    destination: &str,
+) {
+    let workspaces = get_workspaces(connection);
+
+    let next_index = get_target_index(&workspaces, monitor_group, destination);
+    let focused_workspace = find_focused_workspace(&workspaces);
+    let next_focus = determine_focus_after_switch(connection, config, &focused_workspace, monitor_group, next_index);
 
     // Switch the workspaces
     let group_config = config.get_group(monitor_group)
@@ -59,5 +75,9 @@ pub fn switch_workspace_groups(connection: &mut Connection, config: &Config, mon
     connection.run_command(commands).expect("Failed to switch workspace groups");
 
     // Focus the workspace that should be in focus after the switch
-    focus_workspace(connection, &next_focus);
+    // if the target monitor is the same as the originally focused one
+    // do not switch focus back (the target group may be using a "foreign" monitor)
+    if find_focused_workspace(&get_workspaces(connection)).output != focused_workspace.output {
+        focus_workspace(connection, &next_focus);
+    }
 }
